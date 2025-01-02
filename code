@@ -1,0 +1,33 @@
+import pandas as pd
+
+# Load the dataset
+data = pd.read_csv('benchmark.csv')
+
+# Convert 'date' column to datetime
+data['date'] = pd.to_datetime(data['date'])
+
+# Display summary statistics
+print(data.describe())
+
+# Filter anomalies
+negative_quantities = data[data['quantity'] < 0]
+negative_unit_prices = data[data['unit_price'] < 0]
+
+# Calulate total sales
+data['total_sales'] = data['quantity'] * data['unit_price']
+
+# Analyze daily sales trends
+daily_sales = data.groupby('date')['total_sales'].sum()
+
+# Determine which items contribute the most revenue
+top_items = data.groupby('item_code')['total_sales'].sum().sort_values(ascending=False).head(10)
+
+# Aggregate sales by month and year to identify trends
+data['month'] = data['date'].dt.month
+data['year'] = data['date'].dt.year
+
+monthly_sales = data.groupby(['year', 'month'])['total_sales'].sum().reset_index()
+
+# Export cleaned and aggregated data
+data.to_csv('cleaned_data.csv', index=False)
+monthly_sales.to_csv('monthly_sales.csv', index=False)
